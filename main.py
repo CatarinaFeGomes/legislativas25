@@ -1,25 +1,18 @@
-import streamlit as st
 from admin import menu_admin
 from user import menu_utilizador
 
-st.set_page_config(page_title="VotoMatch", page_icon="🗳️")
+def main():
+    print("=== VotoMatch: Assistente de Decisão de Voto ===")
+    while True:
+        modo = input("\nEscolhe o modo:\n1. Admin (gerir afirmações)\n2. Utilizador (responder)\n0. Sair\nEscolha: ")
+        if modo == "1":
+            menu_admin()
+        elif modo == "2":
+            menu_utilizador()
+        elif modo == "0":
+            break
+        else:
+            print("Opção inválida.")
 
-st.title("🗳️ VotoMatch: Assistente de Decisão de Voto")
-
-# Estado da página
-if "modo" not in st.session_state:
-    st.session_state.modo = None
-
-modo = st.radio(
-    "Escolhe o modo:",
-    ("Admin (gerir afirmações)", "Utilizador (responder)", "Sair")
-)
-
-if modo == "Admin (gerir afirmações)":
-    menu_admin()
-
-elif modo == "Utilizador (responder)":
-    menu_utilizador()
-
-elif modo == "Sair":
-    st.info("A aplicação foi terminada. Obrigado por usar o VotoMatch!")
+if __name__ == "__main__":
+    main()
