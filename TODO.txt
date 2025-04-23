@@ -1,0 +1,24 @@
+- PARTIDOS
+- Poder ver os partidos no gráfico de Social/Económico
+- Poder ver os debates de cada partido (data e hora ig) meh
+
+
+- AFIRMAÇÕES
+- Separar as afirmações por categoria " saúde, educação, etc)
+- Ajustar e equação de como valorizar cada afirmação
+- Poder ver quem "venceu" cada questionário
+- Poder ver quem "venceu" mais questionários (o pódio dos questionários em geral)
+- Poder ver a evolução do pódio (ao longo do tempo)
+
+- DEBATES
+- Dar vitória a um ou a outro
+- Dar "tags" a cada partido em cada debate (arrogante, compreensivo, etc)
+- Dar valor a cada tag (1- positivo, 0 - neutro, -1 - negativo)
+- Poder ver as tags mais dadas a cada partido divididas por "sentimento" (valor)
+- Poder ver quem ganhou cada debate
+- Poder ver quem ganhou mais debates
+
+
+
+- GERAL
+- Poder ver o pódio dos questionários + debates ( n sei como faria isto)
