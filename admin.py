@@ -1,17 +1,34 @@
 from storage import carregar_afirmacoes, guardar_afirmacoes
 from storage import carregar_partidos, guardar_partidos
+from storage import carregar_debates
 from utils import ver_afirmacoes
 
 def menu_admin():
     while True:
-        print("\n--- MODO ADMIN ---")
+        print("\n--- Menu ADMIN ---")
+        print("1. Afirmações")
+        print("2. Partidos")
+        print("0. Voltar")
+        opcao = input("Escolha: ")
+        if opcao == "1":
+            menu_admin_afirmacoes()
+        elif opcao == "2":
+            menu_admin_partidos()
+        elif opcao == "0":
+            break
+        else:
+            print("Opção inválida.")
+
+
+
+
+def menu_admin_afirmacoes():
+    while True:
+        print("\n--- ADMIN >> Afirmações ---")
         print("1. Ver afirmações")
         print("2. Adicionar várias afirmações para um partido")
         print("3. Editar afirmação")
         print("4. Remover afirmação")
-        print("5. Adicionar partido")
-        print("6. Editar partido")
-        print("7. Remover partido")
         print("0. Voltar")
         opcao = input("Escolha: ")
         if opcao == "1":
@@ -22,11 +39,24 @@ def menu_admin():
             editar_afirmacao_opcao()
         elif opcao == "4":
             remover_afirmacao_opcao()
-        elif opcao == "5":
+        elif opcao == "0":
+            break
+        else:
+            print("Opção inválida.")
+
+def menu_admin_partidos():
+    while True:
+        print("\n--- ADMIN >> Partidos ---")
+        print("1. Adicionar partidos")
+        print("2. Editar partidos")
+        print("3. Remover partidos")
+        print("0. Voltar")
+        opcao = input("Escolha: ")
+        if opcao == "1":
             adicionar_partido()
-        elif opcao == "6":
+        elif opcao == "2":
             editar_partido()
-        elif opcao == "7":
+        elif opcao == "3":
             remover_partido()
         elif opcao == "0":
             break
@@ -170,3 +200,5 @@ def remover_partido():
             print("Número inválido.")
     except ValueError:
         print("Entrada inválida.")
+
+

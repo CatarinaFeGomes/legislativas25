@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 import matplotlib.pyplot as plt
 from utils import guardar_resultado_utilizador
-from storage import carregar_afirmacoes, carregar_partidos
+from storage import carregar_afirmacoes, carregar_partidos, carregar_partidos_csv, carregar_debates
 
 def menu_utilizador():
     """Menu principal do utilizador."""
@@ -17,8 +17,8 @@ def menu_utilizador():
     while True:
         print("\nEscolha uma das opções:")
         print("1) Responder ao questionário")
-        print("2) Ver histórico")
-        print("3) Ver partidos e letras associadas")
+        print("2) Histórico")
+        print("3) Partidos")
         print("0) Sair")
 
         opcao = input("Escolha a opção (1-4): ").strip()
@@ -26,9 +26,59 @@ def menu_utilizador():
         if opcao == "1":
             responder_questionario(nome_utilizador)
         elif opcao == "2":
-            ver_historico_utilizador(nome_utilizador)
+            menu_utilizador_historico(nome_utilizador)
         elif opcao == "3":
+            menu_utilizador_partidos()
+        elif opcao == "0":
+            print("Saindo...")
+            break
+        else:
+            print("Opção inválida. Tente novamente.")
+
+def menu_utilizador_historico(nome_utilizador):
+    print(f"\n--- USER {nome_utilizador} >> Histórico ---")
+    while True:
+        print("\nEscolha uma das opções:")
+        print("1) Ver evolução dos vencedores ao longo do tempo")
+        print("2) Ver pódio total")
+        print("0) Sair")
+
+        opcao = input("Escolha: ").strip()
+
+        if opcao == "1":
+            ver_historico_utilizador(nome_utilizador)
+        elif opcao == "2":
+            print("Em desenvolvimento...")
+        elif opcao == "0":
+            print("Saindo...")
+            break
+        else:
+            print("Opção inválida. Tente novamente.")
+
+
+
+
+def menu_utilizador_partidos():
+    print("\n--- USER >> Partidos ---")
+    while True:
+        print("\nEscolha uma das opções:")
+        print("1) Ver siglas e nomes dos partidos")
+        print("2) Ver dados do partido")
+        print("3) Ver debates")
+        print("4) Procurar debate por partido")
+        print("0) Sair")
+
+        opcao = input("Escolha: ").strip()
+
+        if opcao == "1":
             mostrar_partidos_e_letras()
+        elif opcao == "2":
+            dados_do_partido()
+        elif opcao == "3":
+            ver_debates()
+        elif opcao == "4":
+            sigla = input("Insere a sigla do partido a procurar nos debates (ex: PS): ").strip().upper()
+            pesquisar_debates_por_partido(sigla)
         elif opcao == "0":
             print("Saindo...")
             break
@@ -153,7 +203,6 @@ def ver_historico_utilizador(nome):
     plt.show()
 
 
-
 def mostrar_partidos_e_letras():
     """Função para mostrar as letras (siglas) e os partidos associados (nome completo)."""
     todas_afirmacoes = carregar_afirmacoes()
@@ -171,6 +220,74 @@ def mostrar_partidos_e_letras():
     for sigla in sorted(siglas_usadas):
         nome = mapa_sigla_para_nome.get(sigla, "(nome desconhecido)")
         print(f"{sigla} - {nome}")
+
+
+def dados_do_partido():
+    partidos = carregar_partidos_csv()
+    if not partidos:
+        print("Não existem partidos registados.")
+        return
+
+    print("\n--- Lista de Partidos ---")
+    for i, partido in enumerate(partidos, start=1):
+        print(f"{i}. {partido['sigla']} - {partido['nome']}")
+
+    try:
+        escolha = int(input("\nEscolhe o número do partido (0 para cancelar): "))
+        if escolha == 0:
+            return
+        if 1 <= escolha <= len(partidos):
+            p = partidos[escolha - 1]
+            print("\n--- Dados do Partido ---")
+            print(f"Sigla: {p['sigla']}")
+            print(f"Nome: {p['nome']}")
+            print(f"Ideologia Política: {p['ideologia']}")
+            print(f"Económicamente: {p['economia']}")
+            print(f"Socialmente: {p['sociedade']}")
+        else:
+            print("Número inválido.")
+    except ValueError:
+        print("Entrada inválida.")
+
+
+def ver_debates():
+    debates = carregar_debates()
+    if not debates:
+        print("Não existem debates registados.")
+        return
+
+    print("\n--- Lista de Debates ---")
+    for debate in debates:
+        numero = debate.get("Número", "?")
+        partido1 = debate.get("Partido1", "?")
+        partido2 = debate.get("Partido2", "?")
+        print(f"{numero}. {partido1} vs {partido2}")
+
+
+def pesquisar_debates_por_partido(sigla):
+    """Mostra todos os debates onde a sigla do partido aparece como Partido1 ou Partido2."""
+    sigla = sigla.strip().upper()
+    debates = carregar_debates()
+    if not debates:
+        print("Não existem debates registados.")
+        return
+
+    resultados = [
+        debate for debate in debates
+        if debate.get("Partido1", "").upper() == sigla or debate.get("Partido2", "").upper() == sigla
+    ]
+
+    if not resultados:
+        print(f"Nenhum debate encontrado para o partido '{sigla}'.")
+        return
+
+    print(f"\n--- Debates com o partido '{sigla}' ---")
+    for debate in resultados:
+        numero = debate.get("Número", "?")
+        p1 = debate.get("Partido1", "?")
+        p2 = debate.get("Partido2", "?")
+        print(f"{numero}. {p1} vs {p2}")
+
 
 
 if __name__ == "__main__":

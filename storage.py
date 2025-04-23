@@ -18,6 +18,8 @@ def guardar_afirmacoes(afirmacoes):
             writer.writerow([af["texto"], af["partido"]])
 
 
+
+#TODO eliminar este .json e usar o csv
 import json
 import os
 
@@ -40,3 +42,33 @@ def carregar_partidos():
 def guardar_partidos(partidos):
     with open("partidos.json", "w", encoding="utf-8") as f:
         json.dump(partidos, f, ensure_ascii=False, indent=2)
+
+
+import csv
+
+def carregar_partidos_csv():
+    try:
+        with open("partidos.csv", newline="", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            return list(reader)
+    except FileNotFoundError:
+        print("Ficheiro 'partidos.csv' não encontrado.")
+        return []
+
+
+
+import csv
+import os
+
+FICHEIRO_DEBATES = "debates.csv"
+import csv
+
+def carregar_debates():
+    try:
+        with open("debates.csv", newline="", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            return list(reader)
+    except FileNotFoundError:
+        print("Ficheiro 'debates.csv' não encontrado.")
+        return []
+
