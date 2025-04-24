@@ -1,89 +1,74 @@
-import random
 import os
+import streamlit as st
+import random
 import json
 from datetime import datetime
 import matplotlib.pyplot as plt
 from utils import guardar_resultado_utilizador
-from storage import carregar_afirmacoes, carregar_partidos, carregar_partidos_csv, carregar_debates
+from storage import carregar_afirmacoes, carregar_partidos, carregar_debates
 
+
+# Função para mostrar o menu do utilizador
 def menu_utilizador():
-    """Menu principal do utilizador."""
-    print("\n--- MODO UTILIZADOR ---")
-    nome_utilizador = input("Nome do utilizador: ").strip()
+    st.title("Modo Utilizador")
+
+    nome_utilizador = st.text_input("Nome do utilizador:").strip()
     if not nome_utilizador:
-        print("Nome inválido.")
+        st.warning("Nome inválido.")
         return
 
-    while True:
-        print("\nEscolha uma das opções:")
-        print("1) Responder ao questionário")
-        print("2) Histórico")
-        print("3) Partidos")
-        print("0) Sair")
+    opcao = st.segmented_control("Escolha uma das opções",
+                                 ["Responder ao questionário", "Histórico", "Partidos", "Sair"])
 
-        opcao = input("Escolha a opção (1-4): ").strip()
+    if opcao == "Responder ao questionário":
+        responder_questionario(nome_utilizador)
+    elif opcao == "Histórico":
+        menu_utilizador_historico(nome_utilizador)
+    elif opcao == "Partidos":
+        menu_utilizador_partidos()
+    elif opcao == "Sair":
+        st.info("Saindo...")
 
-        if opcao == "1":
-            responder_questionario(nome_utilizador)
-        elif opcao == "2":
-            menu_utilizador_historico(nome_utilizador)
-        elif opcao == "3":
-            menu_utilizador_partidos()
-        elif opcao == "0":
-            print("Saindo...")
-            break
-        else:
-            print("Opção inválida. Tente novamente.")
 
+# Função para mostrar o menu do histórico
 def menu_utilizador_historico(nome_utilizador):
-    print(f"\n--- USER {nome_utilizador} >> Histórico ---")
-    while True:
-        print("\nEscolha uma das opções:")
-        print("1) Ver evolução dos vencedores ao longo do tempo")
-        print("2) Ver pódio total")
-        print("0) Sair")
+    st.subheader(f"Histórico de {nome_utilizador}")
 
-        opcao = input("Escolha: ").strip()
+    opcao = st.segmented_control("Escolha uma das opções",
+                                 ["Ver evolução dos vencedores ao longo do tempo", "Ver pódio total", "Sair"])
 
-        if opcao == "1":
-            ver_historico_utilizador(nome_utilizador)
-        elif opcao == "2":
-            print("Em desenvolvimento...")
-        elif opcao == "0":
-            print("Saindo...")
-            break
-        else:
-            print("Opção inválida. Tente novamente.")
+    if opcao == "Ver evolução dos vencedores ao longo do tempo":
+        ver_historico_utilizador(nome_utilizador)
+    elif opcao == "Ver pódio total":
+        st.warning("Em desenvolvimento...")
+    elif opcao == "Sair":
+        st.info("Saindo...")
 
 
-
-
+# Função para o menu de partidos no modo utilizador
 def menu_utilizador_partidos():
-    print("\n--- USER >> Partidos ---")
-    while True:
-        print("\nEscolha uma das opções:")
-        print("1) Ver siglas e nomes dos partidos")
-        print("2) Ver dados do partido")
-        print("3) Ver debates")
-        print("4) Procurar debate por partido")
-        print("0) Sair")
+    st.subheader("Partidos")
 
-        opcao = input("Escolha: ").strip()
+    opcao = st.radio("Escolha uma das opções", [
+        "Ver siglas e nomes dos partidos",
+        "Ver dados do partido",
+        "Ver debates",
+        "Procurar debate por partido",
+        "Sair"
+    ])
 
-        if opcao == "1":
-            mostrar_partidos_e_letras()
-        elif opcao == "2":
-            dados_do_partido()
-        elif opcao == "3":
-            ver_debates()
-        elif opcao == "4":
-            sigla = input("Insere a sigla do partido a procurar nos debates (ex: PS): ").strip().upper()
+    if opcao == "Ver siglas e nomes dos partidos":
+        mostrar_partidos_e_letras()
+    elif opcao == "Ver dados do partido":
+        dados_do_partido()
+    elif opcao == "Ver debates":
+        ver_debates()
+    elif opcao == "Procurar debate por partido":
+        sigla = st.text_input("Insere a sigla do partido a procurar nos debates (ex: PS)").strip().upper()
+        if sigla:
             pesquisar_debates_por_partido(sigla)
-        elif opcao == "0":
-            print("Saindo...")
-            break
-        else:
-            print("Opção inválida. Tente novamente.")
+    elif opcao == "Sair":
+        st.info("Saindo...")
 
 
 def responder_questionario(nome_utilizador):
@@ -136,7 +121,7 @@ def responder_questionario(nome_utilizador):
     respostas_por_valor = {"1": 0, "2": 0, "3": 0, "4": 0, "5": 0}
 
     for i, af in enumerate(afirmacoes_selecionadas):
-        print(f"\n{i+1}/{len(afirmacoes_selecionadas)} - {af['texto']}")
+        print(f"\n{i + 1}/{len(afirmacoes_selecionadas)} - {af['texto']}")
         print("1. Concordo totalmente\n2. Concordo\n3. Neutro\n4. Discordo\n5. Discordo totalmente")
         resposta = input("Escolha (1-5): ")
         while resposta not in opcoes:
@@ -150,7 +135,8 @@ def responder_questionario(nome_utilizador):
         print(f"{posicao}º - {partido}: {score} pontos")
 
     # Guardar histórico do utilizador com data e hora
-    guardar_resultado_utilizador(nome_utilizador, pontuacoes, respostas_por_valor, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    guardar_resultado_utilizador(nome_utilizador, pontuacoes, respostas_por_valor,
+                                 datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     mostrar_grafico_resultado_partidos(pontuacoes)
 
     # Menu extra para ver histórico
@@ -223,7 +209,7 @@ def mostrar_partidos_e_letras():
 
 
 def dados_do_partido():
-    partidos = carregar_partidos_csv()
+    partidos = carregar_partidos()
     if not partidos:
         print("Não existem partidos registados.")
         return
@@ -287,7 +273,6 @@ def pesquisar_debates_por_partido(sigla):
         p1 = debate.get("Partido1", "?")
         p2 = debate.get("Partido2", "?")
         print(f"{numero}. {p1} vs {p2}")
-
 
 
 if __name__ == "__main__":

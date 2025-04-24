@@ -1,18 +1,27 @@
+import streamlit as st
 from admin import menu_admin
 from user import menu_utilizador
 
+
 def main():
-    print("=== VotoMatch: Assistente de Decisão de Voto ===")
-    while True:
-        modo = input("\nEscolhe o modo:\n1. Admin (gerir afirmações)\n2. Utilizador (responder)\n0. Sair\nEscolha: ")
-        if modo == "1":
+    st.title("🗳️ VotoMatch: Assistente de Decisão de Voto")
+
+    if "menu" not in st.session_state:
+        st.session_state.menu = "main"
+
+    if st.session_state.menu == "main":
+        opcao = st.segmented_control("Escolhe o modo:", ["Admin", "Utilizador"])
+        if opcao == "Admin":
+            st.session_state.menu = "admin"
             menu_admin()
-        elif modo == "2":
-            menu_utilizador()
-        elif modo == "0":
-            break
-        else:
-            print("Opção inválida.")
+        elif opcao == "Utilizador":
+            st.session_state.menu = "utilizador"
+
+    elif st.session_state.menu == "admin":
+        menu_admin()
+    elif st.session_state.menu == "utilizador":
+        menu_utilizador()
+
 
 if __name__ == "__main__":
     main()

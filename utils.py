@@ -1,15 +1,18 @@
+import streamlit as st
 import json
 import os
 from datetime import datetime
 
+# Função para mostrar as afirmações
 def ver_afirmacoes(afirmacoes):
     if not afirmacoes:
-        print("\nNenhuma afirmação registada.")
+        st.warning("Nenhuma afirmação registada.")
         return
-    print("\n--- Lista de Afirmações ---")
+    st.subheader("📃 Lista de Afirmações")
     for i, af in enumerate(afirmacoes):
-        print(f"{i+1}. \"{af['texto']}\"  ({af['partido']})")
+        st.markdown(f"**{i+1}.** \"{af['texto']}\"  (_{af['partido']}_)")
 
+# Função para guardar os resultados do utilizador
 def guardar_resultado_utilizador(nome_utilizador, pontuacoes, respostas_por_valor, data_hora):
     ficheiro = os.path.join("historico", f"{nome_utilizador}.json")
     os.makedirs("historico", exist_ok=True)
