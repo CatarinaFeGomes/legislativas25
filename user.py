@@ -49,7 +49,7 @@ def menu_utilizador_historico(nome_utilizador):
 def menu_utilizador_partidos():
     st.subheader("Partidos")
 
-    opcao = st.radio("Escolha uma das opções", [
+    opcao = st.segmented_control("Escolha uma das opções", [
         "Ver siglas e nomes dos partidos",
         "Ver dados do partido",
         "Ver debates",
