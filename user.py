@@ -9,13 +9,9 @@ from storage import carregar_afirmacoes, carregar_partidos, carregar_debates
 
 
 # Função para mostrar o menu do utilizador
-def menu_utilizador():
+def menu_utilizador(nome_utilizador):
     st.title("Modo Utilizador")
-
-    nome_utilizador = st.text_input("Nome do utilizador:").strip()
-    if not nome_utilizador:
-        st.warning("Nome inválido.")
-        return
+    st.write(f"Bem-vindo, **{nome_utilizador}**!")
 
     opcao = st.segmented_control("Escolha uma das opções",
                                  ["Responder ao questionário", "Histórico", "Partidos", "Sair"])
@@ -27,7 +23,7 @@ def menu_utilizador():
     elif opcao == "Partidos":
         menu_utilizador_partidos()
     elif opcao == "Sair":
-        st.info("Saindo...")
+        st.session_state.menu = "main"
 
 
 # Função para mostrar o menu do histórico
@@ -42,7 +38,8 @@ def menu_utilizador_historico(nome_utilizador):
     elif opcao == "Ver pódio total":
         st.warning("Em desenvolvimento...")
     elif opcao == "Sair":
-        st.info("Saindo...")
+        st.session_state.menu = "utilizador"
+        st.rerun()
 
 
 # Função para o menu de partidos no modo utilizador
@@ -68,95 +65,159 @@ def menu_utilizador_partidos():
         if sigla:
             pesquisar_debates_por_partido(sigla)
     elif opcao == "Sair":
-        st.info("Saindo...")
+        st.session_state.menu = "utilizador"
+        st.rerun()
+
+
+import streamlit as st
+import random
+from datetime import datetime
 
 
 def responder_questionario(nome_utilizador):
-    """Função para o utilizador responder ao questionário e ver resultados."""
-    print("\n--- RESPOSTA AO QUESTIONÁRIO ---")
+    """Questionário com navegação passo a passo em Streamlit."""
+
+    st.subheader("Respostas ao Questionário")
     todas_afirmacoes = carregar_afirmacoes()
+
     if not todas_afirmacoes:
-        print("Nenhuma afirmação encontrada. Adiciona algumas no modo admin.")
+        st.warning("Nenhuma afirmação encontrada. Adiciona algumas no modo admin.")
         return
 
+    # Obter partidos únicos
     partidos = list(set(af["partido"] for af in todas_afirmacoes))
     num_partidos = len(partidos)
 
     if num_partidos < 2:
-        print("É necessário pelo menos 2 partidos diferentes.")
+        st.warning("É necessário pelo menos 2 partidos diferentes.")
         return
 
+    # Agrupar afirmações por partido
     afirmacoes_por_partido = {partido: [] for partido in partidos}
     for af in todas_afirmacoes:
         afirmacoes_por_partido[af["partido"]].append(af)
 
-    min_afirmacoes = min(len(afirmacoes_por_partido[partido]) for partido in partidos)
+    min_afirmacoes = min(len(afirmacoes_por_partido[p]) for p in partidos)
     max_total = min_afirmacoes * num_partidos
     min_total = 2 * num_partidos
 
-    print(f"\nNúmero de partidos: {num_partidos}")
-    print(f"Escolhe o número de afirmações (mínimo: {min_total}, máximo: {max_total}, múltiplo de {num_partidos})")
+    # Inicializar sessão
+    if "iniciado" not in st.session_state:
+        st.session_state.iniciado = False
+        st.session_state.afirmacoes = []
+        st.session_state.respostas = []
+        st.session_state.pagina = 0
+        st.session_state.total_afirmacoes = 0
+        st.session_state.mostrar_resultados = False
 
-    while True:
-        try:
-            total_afirmacoes = int(input("Número de afirmações: "))
-            if min_total <= total_afirmacoes <= max_total and total_afirmacoes % num_partidos == 0:
-                break
-            else:
-                print("Número inválido. Deve ser múltiplo do número de partidos e dentro dos limites.")
-        except ValueError:
-            print("Por favor, introduz um número válido.")
+    # Escolha de número de afirmações
+    if not st.session_state.iniciado:
+        total_afirmacoes = st.number_input(
+            "Número de afirmações:",
+            min_value=min_total,
+            max_value=max_total,
+            step=num_partidos
+        )
 
-    num_por_partido = total_afirmacoes // num_partidos
-    afirmacoes_selecionadas = []
+        if total_afirmacoes:
+            st.session_state.total_afirmacoes = total_afirmacoes
+            if st.button("Iniciar Questionário"):
+                num_por_partido = total_afirmacoes // num_partidos
+                afirmacoes_selecionadas = []
 
-    for partido in partidos:
-        random.shuffle(afirmacoes_por_partido[partido])
-        afirmacoes_selecionadas.extend(afirmacoes_por_partido[partido][:num_por_partido])
+                for partido in partidos:
+                    random.shuffle(afirmacoes_por_partido[partido])
+                    afirmacoes_selecionadas.extend(afirmacoes_por_partido[partido][:num_por_partido])
 
-    random.shuffle(afirmacoes_selecionadas)
+                random.shuffle(afirmacoes_selecionadas)
 
-    pontuacoes = {partido: 0 for partido in partidos}
-    opcoes = {"1": 2, "2": 1, "3": 0, "4": -1, "5": -2}
-    respostas_por_valor = {"1": 0, "2": 0, "3": 0, "4": 0, "5": 0}
+                st.session_state.afirmacoes = afirmacoes_selecionadas
+                st.session_state.respostas = [None] * len(afirmacoes_selecionadas)
+                st.session_state.iniciado = True
+                st.session_state.pagina = 0
 
-    for i, af in enumerate(afirmacoes_selecionadas):
-        print(f"\n{i + 1}/{len(afirmacoes_selecionadas)} - {af['texto']}")
-        print("1. Concordo totalmente\n2. Concordo\n3. Neutro\n4. Discordo\n5. Discordo totalmente")
-        resposta = input("Escolha (1-5): ")
-        while resposta not in opcoes:
-            resposta = input("Escolha inválida. Introduz um número entre 1 e 5: ")
-        pontuacoes[af["partido"]] += opcoes[resposta]
-        respostas_por_valor[resposta] += 1
+    if st.session_state.iniciado and not st.session_state.mostrar_resultados:
+        af = st.session_state.afirmacoes[st.session_state.pagina]
+        opcoes = [
+            "1. Concordo totalmente",
+            "2. Concordo",
+            "3. Neutro",
+            "4. Discordo",
+            "5. Discordo totalmente"
+        ]
 
-    print("\n=== RESULTADOS ===")
-    ranking = sorted(pontuacoes.items(), key=lambda x: x[1], reverse=True)
-    for posicao, (partido, score) in enumerate(ranking, start=1):
-        print(f"{posicao}º - {partido}: {score} pontos")
+        st.markdown(f"**{st.session_state.pagina + 1}/{len(st.session_state.afirmacoes)}** - {af['texto']}")
+        resposta = st.radio(
+            "Seleciona a tua resposta:",
+            opcoes,
+            index=opcoes.index(st.session_state.respostas[st.session_state.pagina]) if st.session_state.respostas[
+                st.session_state.pagina] else 2,
+            key=f"radio_{st.session_state.pagina}"
+        )
+        st.session_state.respostas[st.session_state.pagina] = resposta
 
-    # Guardar histórico do utilizador com data e hora
-    guardar_resultado_utilizador(nome_utilizador, pontuacoes, respostas_por_valor,
-                                 datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    mostrar_grafico_resultado_partidos(pontuacoes)
+        col1, col2, col3 = st.columns(3)
 
-    # Menu extra para ver histórico
-    ver = input("\nQueres ver o histórico deste utilizador? (s/n): ").lower()
-    if ver == "s":
-        ver_historico_utilizador(nome_utilizador)
+        if col1.button("⬅️ Anterior") and st.session_state.pagina > 0:
+            st.session_state.pagina -= 1
+
+        if col2.button("➡️ Seguinte") and st.session_state.pagina < len(st.session_state.afirmacoes) - 1:
+            st.session_state.pagina += 1
+
+        if st.session_state.pagina == len(st.session_state.afirmacoes) - 1:
+            if col3.button("📊 Ver Resultados"):
+                st.session_state.mostrar_resultados = True
+
+    if st.session_state.mostrar_resultados:
+        pontuacoes = {partido: 0 for partido in partidos}
+        respostas_por_valor = {str(i): 0 for i in range(1, 6)}
+        valores = {
+            "1. Concordo totalmente": 2,
+            "2. Concordo": 1,
+            "3. Neutro": 0,
+            "4. Discordo": -1,
+            "5. Discordo totalmente": -2
+        }
+
+        for i, af in enumerate(st.session_state.afirmacoes):
+            resposta = st.session_state.respostas[i]
+            valor = valores[resposta]
+            pontuacoes[af["partido"]] += valor
+            respostas_por_valor[resposta[0]] += 1
+
+        st.markdown("---")
+        st.markdown("### 📊 RESULTADOS")
+        ranking = sorted(pontuacoes.items(), key=lambda x: x[1], reverse=True)
+        for posicao, (partido, score) in enumerate(ranking, start=1):
+            st.write(f"{posicao}º - {partido}: {score} pontos")
+
+        guardar_resultado_utilizador(
+            nome_utilizador,
+            pontuacoes,
+            respostas_por_valor,
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        )
+
+        mostrar_grafico_resultado_partidos(pontuacoes)
+
+        if st.radio("Queres ver o histórico deste utilizador?", ["Não", "Sim"], key="ver_historico_resultado") == "Sim":
+            from historico import ver_historico_utilizador
+            ver_historico_utilizador(nome_utilizador)
 
 
 def mostrar_grafico_resultado_partidos(pontuacoes):
-    """Função para mostrar gráfico das pontuações por partido."""
+    """Mostra gráfico das pontuações por partido com Streamlit."""
     partidos = list(pontuacoes.keys())
     valores = list(pontuacoes.values())
 
-    plt.figure(figsize=(8, 5))
-    plt.bar(partidos, valores, color='lightgreen')
-    plt.title("Pontuação final por partido")
-    plt.ylabel("Pontuação")
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.bar(partidos, valores, color='lightgreen')
+    ax.set_title("Pontuação final por partido")
+    ax.set_ylabel("Pontuação")
     plt.xticks(rotation=15)
     plt.tight_layout()
-    plt.show()
+
+    st.pyplot(fig)
 
 
 def ver_historico_utilizador(nome):

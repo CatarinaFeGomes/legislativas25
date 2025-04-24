@@ -9,7 +9,7 @@ def menu_admin():
 
     opcao = st.segmented_control(
         "Escolha uma opção:",
-        ["Afirmações", "Partidos"],
+        ["Afirmações", "Partidos", "Sair"],
         key="menu_admin_radio"
     )
 
@@ -17,6 +17,9 @@ def menu_admin():
         menu_admin_afirmacoes()
     elif opcao == "Partidos":
         menu_admin_partidos()
+    elif opcao == "Sair":
+        st.session_state.menu = "main"
+        st.rerun()  # Recarrega a página e volta ao menu principal
 
 
 def menu_admin_afirmacoes():
@@ -24,7 +27,7 @@ def menu_admin_afirmacoes():
 
     opcao = st.segmented_control(
         "Escolha uma opção:",
-        ["Ver afirmações", "Adicionar várias afirmações para um partido", "Editar afirmação", "Remover afirmação"],
+        ["Ver afirmações", "Adicionar várias afirmações para um partido", "Editar afirmação", "Remover afirmação", "Sair"],
         key="admin_afirmacoes_radio"
     )
 
@@ -36,6 +39,9 @@ def menu_admin_afirmacoes():
         editar_afirmacao_opcao()
     elif opcao == "Remover afirmação":
         remover_afirmacao_opcao()
+    elif opcao == "Sair":
+        st.session_state.menu = "main"
+        st.rerun()  # Recarrega a página e volta ao menu principal
 
 
 def menu_admin_partidos():
@@ -43,7 +49,7 @@ def menu_admin_partidos():
 
     opcao = st.segmented_control(
         "Escolha uma opção:",
-        ["Adicionar partidos", "Editar partidos", "Remover partidos"],
+        ["Adicionar partidos", "Editar partidos", "Remover partidos", "Sair"],
         key="admin_partidos_radio"
     )
 
@@ -53,6 +59,9 @@ def menu_admin_partidos():
         editar_partido()
     elif opcao == "Remover partidos":
         remover_partido()
+    elif opcao == "Sair":
+        st.session_state.menu = "main"
+        st.rerun()  # Recarrega a página e volta ao menu principal
 
 
 def ver_afirmacoes_opcao():
